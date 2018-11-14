@@ -1,0 +1,14 @@
+http:
+  proxyHost: proxy.sync.ro
+  proxyPort: 3128
+  proxySet: true
+https:
+  proxyHost: proxy.sync.ro
+  proxyPort: 3128
+  proxySet: true
+server:
+  port: 8090
+
+logging:
+  level:
+    org.springframework.security: DEBUG
