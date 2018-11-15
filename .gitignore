@@ -7,3 +7,4 @@ target/classes/oauth2/login/SecurityConfig.class
 target/classes/templates/oauth_login.html
 target/classes/application.properties
 target/classes/application.yml
+target/
