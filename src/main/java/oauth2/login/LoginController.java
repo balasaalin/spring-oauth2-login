@@ -23,57 +23,53 @@ import org.springframework.web.client.RestTemplate;
 @Controller
 public class LoginController {
 
-	private static String authorizationRequestBaseUri = "oauth2/authorization";
-	Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
-	
-	@Autowired
-	private OAuth2AuthorizedClientService authorizedClientService;
+    private static final String authorizationRequestBaseUri = "oauth2/authorize-client";
+    Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
 
-	@Autowired
-	private ClientRegistrationRepository clientRegistrationRepository;
+    @Autowired
+    private ClientRegistrationRepository clientRegistrationRepository;
+    @Autowired
+    private OAuth2AuthorizedClientService authorizedClientService;
 
-	@GetMapping("/oauth_login")
-	public String getLoginPage(Model model) {
-	    Iterable<ClientRegistration> clientRegistrations = null;
-	    ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository)
-	      .as(Iterable.class);
-	    if (type != ResolvableType.NONE && 
-	      ClientRegistration.class.isAssignableFrom(type.resolveGenerics()[0])) {
-	        clientRegistrations = (Iterable<ClientRegistration>) clientRegistrationRepository;
-	    }
-	 
-	    clientRegistrations.forEach(registration -> 
-	      oauth2AuthenticationUrls.put(registration.getClientName(), 
-	      authorizationRequestBaseUri + "/" + registration.getRegistrationId()));
-	    model.addAttribute("urls", oauth2AuthenticationUrls);
-	 
-	    return "oauth_login";
-	}
-	
-	@GetMapping("/loginSuccess")
-	public String getLoginInfo(Model model, OAuth2AuthenticationToken authentication) {
-		OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(authentication.getAuthorizedClientRegistrationId(),authentication.getName());
+    @GetMapping("/oauth_login")
+    public String getLoginPage(Model model) {
+        Iterable<ClientRegistration> clientRegistrations = null;
+        ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository)
+            .as(Iterable.class);
+        if (type != ResolvableType.NONE && ClientRegistration.class.isAssignableFrom(type.resolveGenerics()[0])) {
+            clientRegistrations = (Iterable<ClientRegistration>) clientRegistrationRepository;
+        }
 
-		String userInfoEndpointUri = client.getClientRegistration()
-				.getProviderDetails().getUserInfoEndpoint().getUri();
+        clientRegistrations.forEach(registration -> oauth2AuthenticationUrls.put(registration.getClientName(), authorizationRequestBaseUri + "/" + registration.getRegistrationId()));
+        model.addAttribute("urls", oauth2AuthenticationUrls);
 
-		if (!StringUtils.isEmpty(userInfoEndpointUri)) {
-			RestTemplate restTemplate = new RestTemplate();
-			HttpHeaders headers = new HttpHeaders();
-			headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + client.getAccessToken()
-			.getTokenValue());
-			HttpEntity entity = new HttpEntity("", headers);
-			ResponseEntity<Map> response = restTemplate
-					.exchange(userInfoEndpointUri, HttpMethod.GET, entity, Map.class);
-			Map userAttributes = response.getBody();
-			model.addAttribute("name", userAttributes.get("name"));
-		}
+        return "oauth_login";
+    }
 
-		return "loginSuccess";
-	}
-	
-	@GetMapping("/loginFailure")
-	public String loginFailure(Model model) {
-		return "loginFailure";
-	}
+    @GetMapping("/loginSuccess")
+    public String getLoginInfo(Model model, OAuth2AuthenticationToken authentication) {
+
+        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(authentication.getAuthorizedClientRegistrationId(), authentication.getName());
+
+        String userInfoEndpointUri = client.getClientRegistration()
+            .getProviderDetails()
+            .getUserInfoEndpoint()
+            .getUri();
+
+        if (!StringUtils.isEmpty(userInfoEndpointUri)) {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + client.getAccessToken()
+                .getTokenValue());
+
+            HttpEntity<String> entity = new HttpEntity<String>("", headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(userInfoEndpointUri, HttpMethod.GET, entity, Map.class);
+            Map userAttributes = response.getBody();
+            model.addAttribute("name", userAttributes.get("name"));
+        }
+
+        return "loginSuccess";
+    }
+
 }
