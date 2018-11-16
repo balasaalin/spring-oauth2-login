@@ -1,11 +1,16 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
-<meta charset="ISO-8859-1">
-<title>Success</title>
+    <title>Login Success</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
 </head>
 <body>
-	<h1>Welcome, <span th:text={name}></span></h1>
-	<h2><i>Sucess login!</i></h2>
+<h3>
+<div class="label label-info">
+   Welcome, <span th:text="${name}">user</span>!
+   </div>
+   </h3>
 </body>
 </html>
